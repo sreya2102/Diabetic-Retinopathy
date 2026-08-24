@@ -1,10 +1,33 @@
 """
-Project Configuration & Clinical Definitions for RETINASCAN AI Pipeline.
+RETINASCAN - Application Configuration & Clinical Definitions
+
+Explainable AI for Rural Diabetic Retinopathy Screening.
 """
 
-from typing import Dict, List, Set
+from typing import Dict, List, Set, Tuple
 
-# International Clinical Diabetic Retinopathy Severity Scale (ICDR Standard)
+
+# ============================================================
+# Application Metadata
+# ============================================================
+
+APP_NAME: str = "RETINASCAN"
+
+APP_SUBTITLE: str = (
+    "Explainable AI for Rural Diabetic Retinopathy Screening"
+)
+
+APP_VERSION: str = "0.1.0"
+
+APP_ORGANIZATION: str = (
+    "Rural Health Tele-Ophthalmology Initiative"
+)
+
+
+# ============================================================
+# International Clinical Diabetic Retinopathy Severity Scale
+# ============================================================
+
 DR_GRADES: Dict[int, str] = {
     0: "No DR",
     1: "Mild NPDR",
@@ -13,15 +36,60 @@ DR_GRADES: Dict[int, str] = {
     4: "Proliferative DR",
 }
 
-# Referable Diabetic Retinopathy Definition: Grade 2 (Moderate NPDR) and above
+
+# Referable DR:
+# Grade 2 (Moderate NPDR) and above
 REFERABLE_GRADES: Set[int] = {2, 3, 4}
 
-# Supported image file extensions
-SUPPORTED_IMAGE_TYPES: List[str] = [".png", ".jpg", ".jpeg", ".tif", ".tiff"]
+REFERABLE_GRADE_THRESHOLD: int = 2
 
-# AI System Version
-APP_VERSION: str = "0.1.0-phase1-prototype"
 
-# System Execution Safety Settings
+# ============================================================
+# Image / Screening Configuration
+# ============================================================
+
+SUPPORTED_IMAGE_TYPES: List[str] = [
+    ".jpg",
+    ".jpeg",
+    ".png",
+    ".tif",
+    ".tiff",
+]
+
+MAX_IMAGE_SIZE_MB: int = 25
+
+DEFAULT_INPUT_RESOLUTION: Tuple[int, int] = (512, 512)
+
+
+# ============================================================
+# Demonstration / AI Pipeline Safety
+# ============================================================
+
+# True when the real trained AI model/pipeline is not attached.
+# The UI must clearly identify mock/demo results.
+DEMO_MODE: bool = True
+
+# Prevent processing of images that have been determined
+# to be ungradable by the quality assessment module.
 ALLOW_UNGRADABLE_PROCESSING: bool = False
-DEFAULT_INPUT_RESOLUTION: tuple = (512, 512)
+
+
+# ============================================================
+# Clinical Disclaimer
+# ============================================================
+
+CLINICAL_DISCLAIMER: str = (
+    "AI output is intended to support, not replace, clinical diagnosis. "
+    "All screening recommendations require examination or validation "
+    "by a qualified ophthalmologist."
+)
+
+
+# ============================================================
+# Mock / Demonstration UI
+# ============================================================
+
+MOCK_BANNER_TEXT: str = (
+    "DEMO / MOCK RESULT — AI pipeline not connected. "
+    "Demonstration view only."
+)

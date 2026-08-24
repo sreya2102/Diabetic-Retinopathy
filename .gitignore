@@ -1,34 +1,52 @@
-# Python
+# ============================================================
+# RETINASCAN - Git Ignore
+# ============================================================
+
+# Python bytecode & cache
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
-.pytest_cache/
-.coverage
-htmlcov/
-.target/
+.Python
 
-# Virtual Environments
+# Virtual environments
 .venv/
 venv/
 ENV/
 env/
 
+# Environment variables & secrets
+.env
+.env.*
+.streamlit/secrets.toml
+
+# Testing & coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
 # Jupyter Notebooks
 .ipynb_checkpoints/
 
-# Datasets - Exclude all data files, keep directory structure via README.md
+# ============================================================
+# Datasets - Do NOT commit patient/medical data
+# ============================================================
 data/raw/
 data/processed/
 data/annotations/
 data/splits/
+
+# Dataset/archive files
 *.zip
 *.tar
+*.tar.gz
 *.gz
 *.csv
 *.h5
 
-# Model Weights - Exclude model binary weight files
+# ============================================================
+# Model weights - Do NOT commit large model files
+# ============================================================
 models/*.pt
 models/*.pth
 models/*.onnx
@@ -36,18 +54,35 @@ models/*.h5
 models/*.bin
 models/*.ckpt
 
-# IDE & Editor files
-.vscode/
-.idea/
-*.swp
-*.swo
-.DS_Store
-Thumbs.db
+# ============================================================
+# Generated reports and temporary outputs
+# ============================================================
+reports/generated/*
+!reports/generated/.gitkeep
 
-# Output & Temporary images/reports
+logs/
+temp/
+*.tmp
+*.log
+
+# ============================================================
+# Generated images / exports
+# ============================================================
 *.png
 *.jpg
 *.jpeg
 *.svg
-logs/
-temp/
+
+# ============================================================
+# IDE & Editor files
+# ============================================================
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ============================================================
+# Operating system files
+# ============================================================
+.DS_Store
+Thumbs.db

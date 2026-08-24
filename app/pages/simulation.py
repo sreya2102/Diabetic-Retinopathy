@@ -1,7 +1,11 @@
-"""
-Page: Rural Telemedicine & Bandwidth Simulation (Phase 7)
-Simulates end-to-end multi-PHC screening, network constraints, AI throughput, and ophthalmologist review capacity.
-"""
+import os
+import sys
+from pathlib import Path
+
+# Add project root directory to sys.path
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
 
 import pandas as pd
 import plotly.express as px

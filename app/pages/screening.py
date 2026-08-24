@@ -1,7 +1,11 @@
-"""
-Page: Patient Registration & Fundus Image Acquisition (Phase 2)
-Handles patient intake, file validation, instant preview, quality assessment, and ungradable gating.
-"""
+import os
+import sys
+from pathlib import Path
+
+# Add project root directory to sys.path
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
 
 from datetime import datetime
 from PIL import Image

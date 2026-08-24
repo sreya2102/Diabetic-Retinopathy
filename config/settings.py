@@ -12,7 +12,7 @@ APP_VERSION: str = "0.1.0"
 APP_ORGANIZATION: str = "Rural Health Tele-Ophthalmology Initiative"
 
 # Screening & Media Rules
-SUPPORTED_IMAGE_TYPES: List[str] = ["jpg", "jpeg", "png"]
+SUPPORTED_IMAGE_TYPES: List[str] = ["jpg", "jpeg", "png", "tif", "tiff"]
 MAX_IMAGE_SIZE_MB: int = 25
 
 # Demonstration / Safety Flags

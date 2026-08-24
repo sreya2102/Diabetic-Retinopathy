@@ -24,13 +24,29 @@ def test_validate_valid_image():
     assert img.width >= 200 and img.height >= 200
 
 
+def test_validate_case_insensitive_and_tiff_extensions():
+    """Verify that case-insensitive extensions (.JPG, .JPEG, .PNG, .TIF, .TIFF) are accepted."""
+    valid_bytes, _ = create_demo_fundus_sample("normal")
+    for ext_name in ["scan.JPG", "scan.JPEG", "scan.PNG", "scan.TIF", "scan.TIFF", "scan.tif", "scan.tiff"]:
+        is_valid, err_msg, img = validate_image_file(valid_bytes, ext_name)
+        assert is_valid is True, f"Failed for extension {ext_name}: {err_msg}"
+        assert err_msg is None
+        assert img is not None
+
+
 def test_validate_corrupt_image():
-    """Verify that corrupted byte streams are caught safely with a clean error message."""
+    """Verify that corrupted byte streams are caught safely with a clean error message after format check."""
     corrupt_bytes = b"NOT_A_VALID_IMAGE_FILE_RANDOM_BYTES"
     is_valid, err_msg, img = validate_image_file(corrupt_bytes, "fundus.jpg")
     assert is_valid is False
     assert "Corrupt" in err_msg or "unreadable" in err_msg
     assert img is None
+
+    # Also verify with uppercase extension
+    is_valid_upper, err_msg_upper, img_upper = validate_image_file(corrupt_bytes, "fundus.JPG")
+    assert is_valid_upper is False
+    assert "Corrupt" in err_msg_upper or "unreadable" in err_msg_upper
+    assert img_upper is None
 
 
 def test_validate_empty_image():
@@ -48,6 +64,17 @@ def test_validate_unsupported_format():
     is_valid, err_msg, _ = validate_image_file(buf.getvalue(), "scan.gif")
     assert is_valid is False
     assert "Unsupported file type" in err_msg
+
+
+def test_validate_low_resolution():
+    """Verify that images smaller than 200x200 are rejected for clinical quality."""
+    buf = io.BytesIO()
+    tiny_img = Image.new("RGB", (100, 100), color="red")
+    tiny_img.save(buf, format="PNG")
+    is_valid, err_msg, img = validate_image_file(buf.getvalue(), "tiny.png")
+    assert is_valid is False
+    assert "resolution" in err_msg.lower() or "too low" in err_msg.lower()
+    assert img is None
 
 
 def test_quality_estimator_on_normal():

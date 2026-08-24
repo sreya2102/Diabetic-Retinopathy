@@ -17,21 +17,32 @@ def validate_image_file(
     file_bytes: bytes,
     filename: str
 ) -> Tuple[bool, Optional[str], Optional[Image.Image]]:
-    """Validate uploaded image bytes against format, size, corruption, and minimum dimensions."""
+    """
+    Validate uploaded image bytes against format, size, corruption, and minimum dimensions.
+    Case-insensitive checking for supported formats (.jpg, .jpeg, .png, .tif, .tiff).
+    """
     if not file_bytes:
         return False, "File is empty (0 bytes).", None
+
+    # Case-insensitive extension extraction
+    ext = filename.rsplit(".", 1)[-1].strip().lower() if "." in filename else ""
+    supported_types = {t.lower().lstrip(".") for t in SUPPORTED_IMAGE_TYPES}
+
+    if not ext or ext not in supported_types:
+        return (
+            False,
+            f"Unsupported file type (.{ext if ext else 'unknown'}). Supported formats: {', '.join(sorted(supported_types)).upper()}.",
+            None
+        )
 
     size_mb = len(file_bytes) / (1024 * 1024)
     if size_mb > MAX_IMAGE_SIZE_MB:
         return False, f"File size ({size_mb:.1f} MB) exceeds the maximum allowed {MAX_IMAGE_SIZE_MB} MB limit.", None
 
-    ext = filename.split(".")[-1].lower() if "." in filename else ""
-    if ext not in SUPPORTED_IMAGE_TYPES:
-        return False, f"Unsupported file type (.{ext}). Supported formats: {', '.join(SUPPORTED_IMAGE_TYPES).upper()}.", None
-
     try:
         image = Image.open(io.BytesIO(file_bytes))
         image.verify()
+        # Re-open after verify() to load image pixels and convert to standard RGB
         image = Image.open(io.BytesIO(file_bytes)).convert("RGB")
     except Exception as e:
         return False, f"Corrupt or unreadable image file: {str(e)}", None

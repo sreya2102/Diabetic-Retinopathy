@@ -3,6 +3,7 @@ Unit tests for PyTorch DR classifier model structure and inference.
 """
 
 import numpy as np
+import pytest
 import torch
 from src.classification.inference import predict_dr_grade
 from src.classification.model import DRClassifier, build_dr_classifier
@@ -17,9 +18,9 @@ def test_dr_classifier_forward():
     assert logits.shape == (2, 5)
 
 
-def test_predict_dr_grade():
-    """Verify predict_dr_grade runs inference and formats result dict."""
-    model = build_dr_classifier(weights_path=None)
+def test_predict_dr_grade_execution():
+    """Verify predict_dr_grade runs PyTorch model inference and outputs valid softmax probabilities."""
+    model = build_dr_classifier(weights_path=None, device="cpu")
     img = np.random.randint(0, 255, (256, 256, 3), dtype=np.uint8)
     res = predict_dr_grade(model, img)
 
@@ -31,3 +32,12 @@ def test_predict_dr_grade():
     assert "confidence" in res
     assert "probabilities" in res
     assert len(res["probabilities"]) == 5
+
+    # Check softmax probabilities sum to approximately 1.0
+    assert abs(sum(res["probabilities"]) - 1.0) < 1e-3
+
+
+def test_predict_dr_grade_invalid_input():
+    """Verify predict_dr_grade raises ValueError on empty array input."""
+    with pytest.raises(ValueError):
+        predict_dr_grade(None, np.array([]))

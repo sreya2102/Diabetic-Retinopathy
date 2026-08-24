@@ -1,12 +1,12 @@
 """
-DR Severity Grading Definitions & Utilities.
+DR Severity Grading Definitions & Clinical Scale Mapping.
 
 Implements standard mapping for International Clinical Diabetic Retinopathy Severity Scale:
-- Grade 0: No DR
-- Grade 1: Mild NPDR
-- Grade 2: Moderate NPDR
-- Grade 3: Severe NPDR
-- Grade 4: Proliferative DR
+- Grade 0: No DR (Non-referable)
+- Grade 1: Mild NPDR (Non-referable)
+- Grade 2: Moderate NPDR (Referable)
+- Grade 3: Severe NPDR (Referable)
+- Grade 4: Proliferative DR (Referable)
 
 Referable Diabetic Retinopathy is defined as Grade 2 or higher (Moderate NPDR+).
 """
@@ -53,7 +53,14 @@ def is_referable(grade: int) -> bool:
 
 def format_grading_result(class_id: int, confidence: float, probabilities: List[float]) -> Dict[str, Any]:
     """
-    Format DR classification model output into structured grading result dict.
+    Format DR classification model output into structured grading result dict matching API schema:
+    {
+        "class_id": 0-4,
+        "label": str,
+        "referable": bool,
+        "confidence": float (0.0-1.0),
+        "probabilities": list of length 5
+    }
 
     Args:
         class_id: Predicted class ID (0-4).
@@ -63,6 +70,9 @@ def format_grading_result(class_id: int, confidence: float, probabilities: List[
     Returns:
         Structured dictionary matching RETINASCAN grading schema.
     """
+    if not isinstance(class_id, int) or class_id not in DR_GRADES:
+        raise ValueError(f"Invalid class_id: {class_id}. Must be integer 0-4.")
+
     label = grade_to_label(class_id)
     referable_status = is_referable(class_id)
 
@@ -70,6 +80,6 @@ def format_grading_result(class_id: int, confidence: float, probabilities: List[
         "class_id": class_id,
         "label": label,
         "referable": referable_status,
-        "confidence": float(confidence),
-        "probabilities": [float(p) for p in probabilities],
+        "confidence": round(float(confidence), 4),
+        "probabilities": [round(float(p), 4) for p in probabilities],
     }

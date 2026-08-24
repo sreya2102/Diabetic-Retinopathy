@@ -1,0 +1,9 @@
+streamlit
+plotly
+opencv-python
+Pillow
+pandas
+numpy
+reportlab
+simpy
+pytest

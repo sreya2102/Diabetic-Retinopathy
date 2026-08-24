@@ -8,16 +8,24 @@ import cv2
 import numpy as np
 
 
-def validate_image(image: Union[np.ndarray, str]) -> Tuple[bool, Optional[str]]:
+from PIL import Image
+
+
+def validate_image(image: Union[np.ndarray, str, Image.Image]) -> Tuple[bool, Optional[str]]:
     """
-    Validate that an input is a valid image or existing file path.
+    Validate that an input is a valid image, PIL Image, or existing file path.
 
     Args:
-        image: Image array (numpy ndarray) or file path string.
+        image: Image array (numpy ndarray), PIL Image object, or file path string.
 
     Returns:
         Tuple of (is_valid, error_message)
     """
+    if isinstance(image, Image.Image):
+        if image.width == 0 or image.height == 0:
+            return False, "Input image is empty."
+        return True, None
+
     if isinstance(image, str):
         if not os.path.exists(image):
             return False, f"File path does not exist: {image}"
@@ -36,12 +44,12 @@ def validate_image(image: Union[np.ndarray, str]) -> Tuple[bool, Optional[str]]:
     return False, f"Unsupported input type: {type(image)}"
 
 
-def load_image(image_input: Union[str, np.ndarray], color_mode: str = "RGB") -> np.ndarray:
+def load_image(image_input: Union[str, np.ndarray, Image.Image], color_mode: str = "RGB") -> np.ndarray:
     """
     Safely load or validate a fundus image array in specified color mode.
 
     Args:
-        image_input: File path string or existing numpy array (BGR/RGB).
+        image_input: File path string, PIL Image object, or existing numpy array (BGR/RGB).
         color_mode: Desired output format ('RGB', 'BGR', or 'GRAY').
 
     Returns:
@@ -53,6 +61,17 @@ def load_image(image_input: Union[str, np.ndarray], color_mode: str = "RGB") -> 
     is_valid, err = validate_image(image_input)
     if not is_valid:
         raise ValueError(f"Invalid image input: {err}")
+
+    if isinstance(image_input, Image.Image):
+        img_rgb = np.array(image_input.convert("RGB"))
+        if color_mode.upper() == "RGB":
+            return img_rgb
+        elif color_mode.upper() == "BGR":
+            return cv2.cvtColor(img_rgb, cv2.COLOR_RGB2BGR)
+        elif color_mode.upper() == "GRAY":
+            return cv2.cvtColor(img_rgb, cv2.COLOR_RGB2GRAY)
+        else:
+            raise ValueError(f"Unsupported color mode: {color_mode}")
 
     if isinstance(image_input, str):
         img_bgr = cv2.imread(image_input)

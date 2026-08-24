@@ -8,14 +8,20 @@ If unavailable, gracefully falls back to the isolated mock adapter.
 import logging
 from typing import Any, Dict
 
+from config.settings import DEMO_MODE
+
 logger = logging.getLogger(__name__)
 
 _REAL_PIPELINE_AVAILABLE: bool = False
 
 try:
     from src.pipeline import analyze_fundus as _real_analyze_fundus
-    _REAL_PIPELINE_AVAILABLE = True
-    logger.info("Successfully connected to real AI pipeline (src.pipeline).")
+    from app.utils.mock_pipeline import analyze_fundus as _mock_analyze_fundus
+    _REAL_PIPELINE_AVAILABLE = not DEMO_MODE
+    if DEMO_MODE:
+        logger.info("DEMO_MODE enabled. Using mock pipeline adapter.")
+    else:
+        logger.info("Successfully connected to real AI pipeline (src.pipeline).")
 except (ImportError, ModuleNotFoundError):
     from app.utils.mock_pipeline import analyze_fundus as _mock_analyze_fundus
     _REAL_PIPELINE_AVAILABLE = False

@@ -25,9 +25,18 @@ def validate_image_file(
     if size_mb > MAX_IMAGE_SIZE_MB:
         return False, f"File size ({size_mb:.1f} MB) exceeds the maximum allowed {MAX_IMAGE_SIZE_MB} MB limit.", None
 
-    ext = filename.split(".")[-1].lower() if "." in filename else ""
-    if ext not in SUPPORTED_IMAGE_TYPES:
-        return False, f"Unsupported file type (.{ext}). Supported formats: {', '.join(SUPPORTED_IMAGE_TYPES).upper()}.", None
+    raw_ext = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
+    ext_with_dot = f".{raw_ext}" if raw_ext else ""
+
+    supported_set = {
+        t.lower() if t.startswith(".") else f".{t.lower()}"
+        for t in SUPPORTED_IMAGE_TYPES
+    }
+    supported_set.update([".jpg", ".jpeg", ".png", ".tif", ".tiff"])
+
+    if not raw_ext or (ext_with_dot not in supported_set and raw_ext not in supported_set):
+        display_types = ", ".join(sorted({t.upper() if t.startswith(".") else f".{t.upper()}" for t in supported_set}))
+        return False, f"Unsupported file type ({ext_with_dot or raw_ext}). Supported formats: {display_types}.", None
 
     try:
         image = Image.open(io.BytesIO(file_bytes))

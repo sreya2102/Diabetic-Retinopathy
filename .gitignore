@@ -1,0 +1,53 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+.target/
+
+# Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+
+# Datasets - Exclude all data files, keep directory structure via README.md
+data/raw/
+data/processed/
+data/annotations/
+data/splits/
+*.zip
+*.tar
+*.gz
+*.csv
+*.h5
+
+# Model Weights - Exclude model binary weight files
+models/*.pt
+models/*.pth
+models/*.onnx
+models/*.h5
+models/*.bin
+models/*.ckpt
+
+# IDE & Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Output & Temporary images/reports
+*.png
+*.jpg
+*.jpeg
+*.svg
+logs/
+temp/

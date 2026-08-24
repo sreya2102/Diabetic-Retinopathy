@@ -12,7 +12,7 @@ from src.classification.inference import predict_dr_grade
 from src.explainability.confidence import calibrate_confidence
 from src.explainability.evidence import extract_clinical_evidence
 from src.explainability.gradcam import generate_gradcam
-from src.preprocessing.enhancement import enhance_fundus
+from src.preprocessing.enhancement import preprocess_fundus
 from src.preprocessing.quality import assess_image
 from src.segmentation.fovea import locate_fovea
 from src.segmentation.lesions import detect_lesions
@@ -53,7 +53,7 @@ def analyze_fundus(image_input: Union[np.ndarray, str], model: Any = None) -> Di
     quality_res = assess_image(image)
 
     # Step 2: Image Enhancement / Preprocessing
-    enhancement_res = enhance_fundus(image)
+    enhancement_res = preprocess_fundus(image)
 
     # Step 3: Retinal Structure Analysis
     vessel_mask = segment_vessels(image)

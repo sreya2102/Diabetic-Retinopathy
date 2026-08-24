@@ -4,7 +4,7 @@ Single Integrated Pipeline Contract for RETINASCAN AI Analysis.
 This module serves as the primary integration contract consumed by the Streamlit UI.
 """
 
-from typing import Dict, Any, Union
+from typing import Dict, Any, Union, Optional
 import numpy as np
 
 from src.classification.grading import is_referable
@@ -21,7 +21,9 @@ from src.segmentation.vessels import segment_vessels
 from src.utils import load_image
 
 
-def analyze_fundus(image_input: Union[np.ndarray, str], model: Any = None) -> Dict[str, Any]:
+def analyze_fundus(
+    image_input: Union[np.ndarray, str], model: Any = None, device: str = "cpu"
+) -> Dict[str, Any]:
     """
     Run complete end-to-end RETINASCAN Diabetic Retinopathy analysis pipeline on a fundus image.
 
@@ -33,6 +35,7 @@ def analyze_fundus(image_input: Union[np.ndarray, str], model: Any = None) -> Di
     Args:
         image_input: Numpy ndarray (RGB) or valid image file path.
         model: Optional PyTorch DRClassifier model instance.
+        device: 'cpu' or 'cuda'.
 
     Returns:
         Stable, UI-friendly structured analysis dictionary matching RETINASCAN contract schema:
@@ -46,16 +49,16 @@ def analyze_fundus(image_input: Union[np.ndarray, str], model: Any = None) -> Di
             "recommendation": ...
         }
     """
-    # Load and validate input image
+    # Load and validate input image array (RGB format)
     image = load_image(image_input, color_mode="RGB")
 
-    # Step 1: Image Quality Assessment
+    # Step 1: Image Quality Assessment (Blur, Illumination, Exposure, FOV, Gradability, Feedback)
     quality_res = assess_image(image)
 
-    # Step 2: Image Enhancement / Preprocessing
+    # Step 2: Image Enhancement & Preprocessing (CLAHE, Green Channel, Denoising)
     enhancement_res = preprocess_fundus(image)
 
-    # Step 3: Retinal Structure Analysis
+    # Step 3: Retinal Structure Analysis (Vessels, Optic Disc, Fovea)
     vessel_mask = segment_vessels(image)
     optic_disc_res = locate_optic_disc(image)
     fovea_res = locate_fovea(image, optic_disc_center=optic_disc_res.get("center"))
@@ -66,27 +69,31 @@ def analyze_fundus(image_input: Union[np.ndarray, str], model: Any = None) -> Di
         "fovea": fovea_res,
     }
 
-    # Step 4: Lesion Detection & Analysis
+    # Step 4: Lesion Detection & Segmentation (MAs, HEs, EXs, SEs)
     lesions_res = detect_lesions(image)
 
-    # Step 5: DR Severity Classification
-    grading_res = predict_dr_grade(model, image)
+    # Step 5: DR Severity Classification (PyTorch 5-class model inference)
+    grading_res = predict_dr_grade(model, image, device=device)
 
-    # Step 6: Explainable AI & Clinical Evidence
+    # Step 6: Explainable AI (Grad-CAM visual heatmap/overlay & Lesion Clinical Evidence)
     gradcam_res = generate_gradcam(model, image)
-    evidence_res = extract_clinical_evidence(lesions_res)
+    evidence_res = extract_clinical_evidence(lesions_res, grading_dict=grading_res)
 
     # Step 7: Screening Recommendation Synthesis
     if not quality_res.get("gradable", True):
-        recommendation = "Ungradable Image: Please recapture fundus image following feedback guidelines."
+        recommendation = (
+            "UNGRADABLE FUNDUS IMAGE: Re-capture required. "
+            + "; ".join(quality_res.get("feedback", []))
+        )
     elif grading_res.get("referable", False):
         recommendation = (
-            f"REFERABLE DR DETECTED ({grading_res.get('label')}): Urgent ophthalmologist referral recommended "
-            "for comprehensive clinical evaluation."
+            f"REFERABLE DIABETIC RETINOPATHY ({grading_res.get('label')}): "
+            "Urgent clinical evaluation by an ophthalmologist is recommended."
         )
     else:
         recommendation = (
-            f"NON-REFERABLE DR ({grading_res.get('label')}): Routine annual diabetic eye screening recommended."
+            f"NON-REFERABLE DIABETIC RETINOPATHY ({grading_res.get('label')}): "
+            "Routine annual diabetic eye screening recommended."
         )
 
     # Final Integrated Contract Schema Output

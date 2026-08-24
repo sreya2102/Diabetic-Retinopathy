@@ -1,5 +1,5 @@
 """
-Confusion Matrix Generation & Formatting Module.
+Confusion Matrix Generation & Visualization Module.
 """
 
 from typing import Optional, Sequence
@@ -11,18 +11,21 @@ def generate_confusion_matrix(
     y_true: Sequence[int], y_pred: Sequence[int], labels: Optional[Sequence[int]] = None
 ) -> np.ndarray:
     """
-    Generate confusion matrix array for 5-class DR grading.
+    Generate 5x5 confusion matrix array for DR severity grading.
 
     Args:
-        y_true: True ground truth grade integer labels (0-4).
-        y_pred: Predicted grade integer labels (0-4).
-        labels: Optional explicit label ordering list (default [0, 1, 2, 3, 4]).
+        y_true: Ground truth DR severity grade labels (0-4).
+        y_pred: Predicted DR severity grade labels (0-4).
+        labels: Explicit class label order list (default [0, 1, 2, 3, 4]).
 
     Returns:
         2D numpy array confusion matrix of shape (5, 5).
     """
     if labels is None:
         labels = [0, 1, 2, 3, 4]
+
+    if len(y_true) == 0 or len(y_pred) == 0:
+        raise ValueError("Empty ground truth or prediction array provided for confusion matrix.")
 
     cm = sklearn_cm(y_true, y_pred, labels=labels)
     return cm
